@@ -586,4 +586,100 @@ if (!function_exists('collection')) {
             return \think\Collection::make($resultSet);
         }
     }
+    // 获取配置参数
+    function C($name = '', $value = null, $range = '')
+    {
+        if (is_null($value) && is_string($name)) {
+            return \think\Config::get($name, $range);
+        } else {
+            return \think\Config::set($name, $value, $range);
+        }
+    }
+
+// 获取输入数据 支持默认值和过滤
+    function I($key, $default = null, $filter = '', $merge = false)
+    {
+        if (0 === strpos($key, '?')) {
+            $key = substr($key, 1);
+            $has = '?';
+        } else {
+            $has = '';
+        }
+        if ($pos = strpos($key, '.')) {
+            // 指定参数来源
+            $method = substr($key, 0, $pos);
+            if (in_array($method, ['get', 'post', 'put', 'delete', 'param', 'request', 'session', 'cookie', 'server', 'globals', 'env', 'path', 'file'])) {
+                $key = substr($key, $pos + 1);
+            } else {
+                $method = 'param';
+            }
+        } else {
+            // 默认为自动判断
+            $method = 'param';
+        }
+        return \think\Input::$method($has . $key, $default, $filter, $merge);
+    }
+
+    /**
+     * 记录时间（微秒）和内存使用情况
+     * @param string $start 开始标签
+     * @param string $end 结束标签
+     * @param integer $dec 小数位
+     * @return mixed
+     */
+    function G($start, $end = '', $dec = 6)
+    {
+        if ('' == $end) {
+            \think\Debug::remark($start);
+        } else {
+            return 'm' == $dec ? \think\Debug::getRangeMem($start, $end) : \think\Debug::getRangeTime($start, $end, $dec);
+        }
+    }
+
+    /**
+     * 实例化一个没有模型文件的Model
+     * @param string $name Model名称 支持指定基础模型 例如 MongoModel:User
+     * @param string|null $tablePrefix 表前缀 null表示自动获取配置
+     * @param mixed $connection 数据库连接信息
+     * @return \Think\Model
+     */
+    function M($name = '', $tablePrefix = null, $connection = '')
+    {
+        return \think\Loader::table($name, ['prefix' => $tablePrefix, 'connection' => $connection]);
+    }
+
+    /**
+     * 实例化Model
+     * @param string $name Model名称
+     * @param string $layer 业务层名称
+     * @return object
+     */
+    function D($name = '', $layer = MODEL_LAYER)
+    {
+        return \think\Loader::model($name, $layer);
+    }
+
+
+    /**
+     * 实例化控制器 格式：[模块/]控制器
+     * @param string $name 资源地址
+     * @param string $layer 控制层名称
+     * @return object
+     */
+    function A($name, $layer = CONTROLLER_LAYER)
+    {
+        return \think\Loader::controller($name, $layer);
+    }
+
+    /**
+     * 调用模块的操作方法 参数格式 [模块/控制器/]操作
+     * @param string $url 调用地址
+     * @param string|array $vars 调用参数 支持字符串和数组
+     * @param string $layer 要调用的控制层名称
+     * @return mixed
+     */
+    function R($url, $vars = [], $layer = CONTROLLER_LAYER)
+    {
+        return \think\Loader::action($url, $vars, $layer);
+    }
 }

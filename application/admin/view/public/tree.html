@@ -1,0 +1,95 @@
+<!--分类树-->
+<link rel="stylesheet" href="/static/lib/zTree/v3/css/zTreeStyle/zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="/static/lib/zTree/v3/js/jquery.ztree.all-3.5.min.js"></script>
+<div class="pos-a" style="position:absolute;z-index:99;min-width:200px;left:1px;top:23px; bottom:0;height:280px; background-color:white; overflow:auto;">
+    <ur><span style="color:red;font-size:12px">***点击分类名字删除分类***</span></ur>
+    <ul id="treeDemo" class="ztree"></ul>
+</div>
+<!--<i style="clear:both;"></i>-->
+<script type="text/javascript">
+
+    var zNodes;
+    //    var zNodes=[
+    //        { id:1, pId:0, name:"一级分类", open:true},
+    //        { id:11, pId:1, name:"二级分类"},
+    //        { id:111, pId:11, name:"三级分类"},
+    //        { id:112, pId:11, name:"三级分类"},
+    //        { id:113, pId:11, name:"三级分类"},
+    //        { id:114, pId:11, name:"三级分类"},
+    //        { id:115, pId:11, name:"三级分类"},
+    //        { id:12, pId:1, name:"二级分类 1-2"},
+    //        { id:121, pId:12, name:"三级分类 1-2-1"},
+    //        { id:122, pId:12, name:"三级分类 1-2-2"},
+    //    ];
+    //    获取数据
+    $.ajax({
+        type: 'post',
+        data:'',
+        url: 'product_ajax',
+        dataType: 'json',
+        async:false,
+        success: function(data){
+//            alert(data)
+            zNodes=data
+        },
+        error:function(data) {
+            console.log(data.msg);
+        },
+    });
+    var setting = {
+        view: {
+            dblClickExpand: false,
+            showLine: false,
+            selectedMulti: false
+        },
+        data: {
+            simpleData: {
+                enable:true,
+                idKey: "id",
+                pIdKey: "pid",
+                rootPId: "name"
+            }
+        },
+        callback: {
+            beforeClick: function(treeId, treeNode) {
+//		    treeNode为对象
+                if(confirm('你确定要删除此分类吗?')){
+                    $.ajax({
+                        url:'product_del',
+                        data:{id:treeNode.id},
+                        type:'get',
+                        dataType:'json',
+                        async:false,
+                        success:function(data){
+                            if(data==1){
+                                alert('删除成功');location.replace(location.href)
+//                        parent.location.href="{:url('product_category')}";
+                            }else{
+                                alert('分类下有子分类,不能删除');
+                            }
+                        }
+
+                    });
+                }
+            }
+        }
+    };
+
+    var code;
+
+    function showCode(str) {
+        if (!code) code = $("#code");
+        code.empty();
+        code.append("<li>"+str+"</li>");
+    }
+
+    $(document).ready(function(){
+        var t = $("#treeDemo");
+        t = $.fn.zTree.init(t, setting, zNodes);
+        demoIframe = $("#testIframe");
+        //demoIframe.on("load", loadReady);
+        var zTree = $.fn.zTree.getZTreeObj("tree");
+        //zTree.selectNode(zTree.getNodeByParam("id",'11'));
+
+    });
+</script>
